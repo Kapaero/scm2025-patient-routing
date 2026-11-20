@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patient Routing Re-implementation</title>
+<meta name="description" content="Open re-implementation of the experiment from the SCM 2025 paper on patient routing models in emergent situations.">
+<style>
+:root{--bg:#fff;--fg:#1c1f24;--muted:#5b6470;--line:#d9dde3;--accent:#2457c5;--card:#f5f7fa}
+@media (prefers-color-scheme:dark){:root{--bg:#14171c;--fg:#e6e9ee;--muted:#9aa4b2;--line:#2a2f37;--accent:#7aa2f7;--card:#1b1f26}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:1.7rem;line-height:1.25;margin:0 0 .4rem}
+h2{font-size:1.2rem;margin:2rem 0 .6rem}
+a{color:var(--accent)}
+.meta{color:var(--muted);font-size:.95rem}
+.note{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin:1.2rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;white-space:nowrap}
+th{background:var(--card)}
+img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:6px}
+code,pre{font-family:ui-monospace,Consolas,monospace;font-size:.9rem}
+pre{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto}
+li{margin:.25rem 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Patient routing in an emergency department: open re-implementation</h1>
+<p class="meta">Code, parameters and a one-command reproduction of the experiment described in the paper below.</p>
+
+<div class="note">
+<strong>Paper.</strong> Bondarenko G. O., Popova A. R., Syryh A. S., Patoka Y. V., Geichenko E. I., Pavluk V. S.
+<em>Intelligent Patient Routing Models in Emergent Situations - An Integrative Approach to Optimizing Distribution.</em>
+2025 XXVIII International Conference on Soft Computing and Measurements (SCM), pp. 174-177.
+DOI: <a href="https://doi.org/10.1109/SCM66446.2025.11060180">10.1109/SCM66446.2025.11060180</a>
+</div>
+
+<h2>What this is</h2>
+<p>The paper compares three routing policies inside a hospital emergency department: Petri nets, GOAP (goal-oriented action planning) and a genetic algorithm.
+The original experiment code was not preserved. This repository is an open re-implementation: the model is rebuilt from the paper's description,
+and its free parameters are calibrated so that the means and standard deviations of waiting time match the values read from the paper's figures.
+Every number on this page can be reproduced with one command.</p>
+
+<h2>Results</h2>
+<p>100 seeds (100-199), not used in the final parameter search. Time in model units treated as minutes. "Target" is read from the paper's figure.</p>
+<table>
+<thead><tr><th>Method</th><th>Critical: model</th><th>Critical: target</th><th>Non-critical: model</th><th>Non-critical: target</th></tr></thead>
+<tbody>
+<tr><td>Petri nets</td><td>25.6 ± 6.8</td><td>25 ± 5.5</td><td>25.6 ± 6.8</td><td>25 ± 5.5</td></tr>
+<tr><td>GOAP</td><td>13.9 ± 4.2</td><td>14 ± 6.2</td><td>18.9 ± 6.8</td><td>21 ± 6.5</td></tr>
+<tr><td>Genetic algorithm</td><td>33.9 ± 8.1</td><td>44 ± 10.0</td><td>33.0 ± 7.3</td><td>31 ± 10.0</td></tr>
+</tbody>
+</table>
+<p><img src="figures/forms_model.png" alt="Histograms of waiting time for critical and non-critical patients under three policies in the model"></p>
+
+<h2>Limits</h2>
+<ul>
+<li><strong>Calibrated, not independent.</strong> 11 free parameters were calibrated against 12 summary statistics read from the figures, on top of base parameters from an earlier calibration. Agreement of the means is a result of calibration.</li>
+<li><strong>Genetic algorithm, critical patients.</strong> The paper shows critical patients waiting longer than non-critical ones (about 44 vs 31). The model gives about 34 for both groups. This mismatch is not resolved.</li>
+<li><strong>Spread of GOAP.</strong> The model SD for GOAP critical patients (4.2) is lower than the one read from the paper (6.2).</li>
+<li><strong>No clinical data.</strong> This is a simulation without real patients. No clinical conclusion follows from it.</li>
+<li><strong>Not the original code.</strong> The numbers describe this model, not the one that produced the paper. The paper's own figures are not reproduced here.</li>
+</ul>
+
+<h2>Run</h2>
+<pre>pip install -r requirements.txt
+python code/reproduce.py results</pre>
+<p>The script prints the table and writes <code>results/forms_model.png</code>. <code>code/fit_v10.py</code> repeats the parameter search; <code>code/_v10.json</code> holds the parameters used above.</p>
+
+<h2>Files</h2>
+<ul>
+<li><code>code/reconstruct_v3.py</code> - corridor model of the emergency department</li>
+<li><code>code/fit_v3.py</code>, <code>code/fit_v10.py</code> - model factory, the three policies, parameter search</li>
+<li><code>code/_v3_detour.json</code>, <code>code/_v10.json</code> - calibrated parameters</li>
+<li><code>code/reproduce.py</code> - reproduces the table and figure on fresh seeds</li>
+</ul>
+</main>
+</body>
+</html>
